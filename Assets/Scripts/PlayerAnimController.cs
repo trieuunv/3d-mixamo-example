@@ -7,48 +7,45 @@ using UnityEngine.InputSystem;   // ← BẮT BUỘC thêm dòng này
 /// </summary>
 public class PlayerAnimController : MonoBehaviour
 {
-    [Header("=== Cài đặt phím ===")]
-    [Tooltip("Phím để vẫy tay (giữ để vẫy)")]
+    [Header("Key Setup")]
+    [Tooltip("Button to wave (hold to wave)")]
     public Key waveKey = Key.W;
 
-    [Tooltip("Phím để tạo dáng (giữ để pose)")]
+    [Tooltip("Button to pose (hold to pose)")]
     public Key poseKey = Key.P;
 
-    [Tooltip("Phím để nhảy (nhấn 1 lần)")]
+    [Tooltip("Button to jump (click once)")]
     public Key jumpKey = Key.Space;
 
-    [Header("=== Debug (chỉ xem, không sửa) ===")]
+    [Header("Debug")]
     [SerializeField] private bool isWaving = false;
     [SerializeField] private bool isPosing = false;
 
-    // Component Animator
     private Animator animator;
 
-    // Hash ID của parameter (tối ưu hiệu năng)
     private readonly int HASH_IS_WAVING = Animator.StringToHash("isWaving");
     private readonly int HASH_IS_POSING = Animator.StringToHash("isPosing");
     private readonly int HASH_JUMP      = Animator.StringToHash("jump");
 
     void Awake()
     {
-        // Lấy component Animator
         animator = GetComponent<Animator>();
 
         if (animator == null)
         {
-            Debug.LogError($"[{gameObject.name}] Không tìm thấy component Animator!");
+            Debug.LogError($"[{gameObject.name}] Can't find Animator component!");
             enabled = false;
             return;
         }
 
         if (animator.avatar == null)
         {
-            Debug.LogWarning($"[{gameObject.name}] Animator chưa có Avatar.");
+            Debug.LogWarning($"[{gameObject.name}] Animator no Avatar.");
         }
 
         if (animator.runtimeAnimatorController == null)
         {
-            Debug.LogError($"[{gameObject.name}] Animator chưa có Controller!");
+            Debug.LogError($"[{gameObject.name}] Animator no Controller!");
             enabled = false;
             return;
         }
@@ -56,7 +53,6 @@ public class PlayerAnimController : MonoBehaviour
 
     void Update()
     {
-        // Kiểm tra có bàn phím kết nối không
         if (Keyboard.current == null) return;
 
         HandleWaving();
@@ -64,15 +60,10 @@ public class PlayerAnimController : MonoBehaviour
         HandleJump();
     }
 
-    /// <summary>
-    /// Xử lý vẫy tay - giữ phím để vẫy liên tục
-    /// </summary>
     void HandleWaving()
     {
-        // Nhấn xuống → bắt đầu vẫy
         if (Keyboard.current[waveKey].wasPressedThisFrame)
         {
-            // Nếu đang pose thì tắt pose trước
             if (isPosing)
             {
                 isPosing = false;
@@ -83,7 +74,6 @@ public class PlayerAnimController : MonoBehaviour
             animator.SetBool(HASH_IS_WAVING, true);
         }
 
-        // Nhả phím → dừng vẫy
         if (Keyboard.current[waveKey].wasReleasedThisFrame)
         {
             isWaving = false;
@@ -91,15 +81,10 @@ public class PlayerAnimController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Xử lý tạo dáng - giữ phím để giữ pose
-    /// </summary>
     void HandlePosing()
     {
-        // Nhấn xuống → bắt đầu pose
         if (Keyboard.current[poseKey].wasPressedThisFrame)
         {
-            // Nếu đang vẫy thì tắt vẫy trước
             if (isWaving)
             {
                 isWaving = false;
@@ -110,7 +95,6 @@ public class PlayerAnimController : MonoBehaviour
             animator.SetBool(HASH_IS_POSING, true);
         }
 
-        // Nhả phím → thoát pose
         if (Keyboard.current[poseKey].wasReleasedThisFrame)
         {
             isPosing = false;
@@ -118,14 +102,10 @@ public class PlayerAnimController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Xử lý nhảy - nhấn 1 lần
-    /// </summary>
     void HandleJump()
     {
         if (Keyboard.current[jumpKey].wasPressedThisFrame)
         {
-            // Tắt các trạng thái khác trước khi nhảy
             if (isWaving)
             {
                 isWaving = false;
@@ -137,12 +117,9 @@ public class PlayerAnimController : MonoBehaviour
                 animator.SetBool(HASH_IS_POSING, false);
             }
 
-            // Kích hoạt Jump
             animator.SetTrigger(HASH_JUMP);
         }
     }
-
-    // ============ HÀM PUBLIC ============
 
     public void StartWaving()
     {
